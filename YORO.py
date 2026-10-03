@@ -39,6 +39,8 @@ st.set_page_config(
 )
 
 # Initialisations d'état de session
+if "user_authenticated" not in st.session_state:
+    st.session_state["user_authenticated"] = False
 if "admin_authenticated" not in st.session_state:
     st.session_state["admin_authenticated"] = False
 if "app_title" not in st.session_state:
@@ -46,15 +48,40 @@ if "app_title" not in st.session_state:
 if "default_cutoff" not in st.session_state:
     st.session_state["default_cutoff"] = 1.0
 
+
+# ==========================================
+# PAGE D'ACCÈS PRIVÉ (LOGIN À L'ENTRÉE)
+# ==========================================
+if not st.session_state["user_authenticated"]:
+    st.title("🔒 Accès Privé — GeoAssistant Pro")
+    st.markdown("Veuillez vous identifier pour accéder à la plateforme d'analyse géologique et minière.")
+    
+    col_login, _ = st.columns([1, 1])
+    with col_login:
+        with st.form("login_form"):
+            username_input = st.text_input("Identifiant :")
+            password_input = st.text_input("Mot de passe :", type="password")
+            submit_login = st.form_submit_button("Se connecter à la plateforme")
+            
+            if submit_login:
+                if username_input == "YT" and password_input == "YT2026":
+                    st.session_state["user_authenticated"] = True
+                    st.session_state["admin_authenticated"] = True
+                    st.success("✅ Accès autorisé ! Bienvenue YT.")
+                    st.rerun()
+                else:
+                    st.error("❌ Identifiant ou mot de passe incorrect.")
+    st.stop()
+
+
+# ==========================================
+# EN-TÊTE ET BARRE LATÉRALE - NAVIGATION
+# ==========================================
 st.title(f"⛏️ {st.session_state['app_title']} — Plateforme Géologique & Minière")
 st.markdown(
     "Plateforme d'analyse pour l'estimation de ressources, la géotechnique, l'hydrogéologie, l'environnement et le design minier."
 )
 
-
-# ==========================================
-# BARRE LATÉRALE - NAVIGATION
-# ==========================================
 st.sidebar.header("Navigation")
 module = st.sidebar.radio(
     "Sélectionnez un module :",
@@ -71,6 +98,12 @@ module = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
+st.sidebar.write("👤 **Utilisateur :** YT")
+if st.sidebar.button("🔒 Déconnexion"):
+    st.session_state["user_authenticated"] = False
+    st.session_state["admin_authenticated"] = False
+    st.rerun()
+
 st.sidebar.info(
     "**GeoAssistant Pro v3.0**\n\n"
     "Développé pour les ingénieurs géologues et miniers."
@@ -219,7 +252,6 @@ elif module == "2. Géotechnique (RMR Bieniawski)":
             ],
         )
 
-    # Calculs des scores
     score_ucs = 15 if ucs > 250 else 12 if ucs >= 100 else 7 if ucs >= 50 else 4 if ucs >= 25 else 2 if ucs >= 5 else 1 if ucs >= 1 else 0
     score_rqd = 20 if rqd >= 90 else 17 if rqd >= 75 else 13 if rqd >= 50 else 8 if rqd >= 25 else 3
     score_spacing = 20 if spacing > 2.0 else 15 if spacing >= 0.6 else 10 if spacing >= 0.2 else 8 if spacing >= 0.06 else 5
@@ -319,7 +351,7 @@ elif module == "4. Environnement (Drainage Acide)":
         sulfur_pct = st.number_input("Teneur en Soufre Total S (%) :", min_value=0.0, value=1.5, step=0.1)
         np_val = st.number_input("Potentiel de Neutralisation NP (kg CaCO3/t) :", min_value=0.0, value=25.0, step=1.0)
 
-        ap_val = sulfur_pct * 31.25  # Conversion standard Sobek
+        ap_val = sulfur_pct * 31.25
         nnp_val = np_val - ap_val
         npr_ratio = np_val / ap_val if ap_val > 0 else 999.0
 
@@ -615,55 +647,40 @@ elif module == "7. Générateur de Rapport PDF":
 # ==========================================
 elif module == "⚙️ Administration":
     st.header("⚙️ Espace d'Administration Système")
+    st.success("🔒 Connecté en tant qu'Administrateur Général : **YT**")
 
-    if not st.session_state["admin_authenticated"]:
-        st.subheader("🔑 Connexion Sécurisée")
-        with st.form("admin_login_form"):
-            admin_user = st.text_input("Identifiant Administrateur :")
-            admin_pass = st.text_input("Mot de passe :", type="password")
-            submit_login = st.form_submit_button("Se connecter")
+    tab_adm1, tab_adm2 = st.tabs([
+        "⚙️ Config & Paramètres Application",
+        "📜 Session & Déconnexion",
+    ])
 
-            if submit_login:
-                if admin_user == "YT" and admin_pass == "YT2026":
-                    st.session_state["admin_authenticated"] = True
-                    st.success("✅ Authentification réussie ! Bienvenue YT.")
-                    st.rerun()
-                else:
-                    st.error("❌ Identifiant ou mot de passe incorrect.")
-    else:
-        st.success("🔒 Connecté en tant qu'Administrateur Général : **YT**")
+    with tab_adm1:
+        st.subheader("Réglages de l'Application")
+        new_title = st.text_input("Titre personnalisé :", st.session_state["app_title"])
+        new_cutoff = st.number_input(
+            "Valeur Cut-off par défaut (g/t) :",
+            min_value=0.0,
+            max_value=10.0,
+            value=float(st.session_state["default_cutoff"]),
+            step=0.1,
+        )
 
-        tab_adm1, tab_adm2 = st.tabs([
-            "⚙️ Config & Paramètres Application",
-            "📜 Session & Déconnexion",
-        ])
+        if st.button("💾 Enregistrer les Modifications App"):
+            st.session_state["app_title"] = new_title
+            st.session_state["default_cutoff"] = new_cutoff
+            st.success("Paramètres enregistrés !")
 
-        with tab_adm1:
-            st.subheader("Réglages de l'Application")
-            new_title = st.text_input("Titre personnalisé :", st.session_state["app_title"])
-            new_cutoff = st.number_input(
-                "Valeur Cut-off par défaut (g/t) :",
-                min_value=0.0,
-                max_value=10.0,
-                value=float(st.session_state["default_cutoff"]),
-                step=0.1,
-            )
+        st.markdown("---")
+        st.subheader("État des Librairies Dépendantes")
+        c_a1, c_a2 = st.columns(2)
+        c_a1.metric("Folium (Cartographie)", "OK" if HAS_FOLIUM else "Manquant")
+        c_a2.metric("ReportLab (PDF)", "OK" if HAS_REPORTLAB else "Manquant")
 
-            if st.button("💾 Enregistrer les Modifications App"):
-                st.session_state["app_title"] = new_title
-                st.session_state["default_cutoff"] = new_cutoff
-                st.success("Paramètres enregistrés !")
-
-            st.markdown("---")
-            st.subheader("État des Librairies Dépendantes")
-            c_a1, c_a2 = st.columns(2)
-            c_a1.metric("Folium (Cartographie)", "OK" if HAS_FOLIUM else "Manquant")
-            c_a2.metric("ReportLab (PDF)", "OK" if HAS_REPORTLAB else "Manquant")
-
-        with tab_adm2:
-            st.subheader("Gestion de Session Administrateur")
-            st.write("Compte actif : **YT**")
-            if st.button("🚪 Déconnexion"):
-                st.session_state["admin_authenticated"] = False
-                st.info("Vous avez été déconnecté.")
-                st.rerun()
+    with tab_adm2:
+        st.subheader("Gestion de Session Administrateur")
+        st.write("Compte actif : **YT**")
+        if st.button("🚪 Déconnexion Session Administrateur"):
+            st.session_state["user_authenticated"] = False
+            st.session_state["admin_authenticated"] = False
+            st.info("Vous avez été déconnecté.")
+            st.rerun()
