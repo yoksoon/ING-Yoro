@@ -29,7 +29,7 @@ except ImportError:
 
 
 # ==========================================
-# CONFIGURATION DE LA PAGE & MASQUAGE DU HEADER NATIF
+# CONFIGURATION DE LA PAGE & DESIGN RESPONSIVE MULTI-SUPPORTS
 # ==========================================
 st.set_page_config(
     page_title="GeoAssistant Pro",
@@ -38,30 +38,86 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Injection de CSS pour cacher le menu Streamlit natif (Share, GitHub, 3 dots, etc.) et styliser l'UI en format XXXL
+# Injection de CSS Responsive (Smartphones, Tablettes, PC & Mac)
 st.markdown(
     """
     <style>
-    /* Cacher le header natif Streamlit, le bouton Share, l'icône GitHub et le footer */
+    /* 1. Masquer le menu natif Streamlit (Share, GitHub, 3 points, etc.) */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
     .stAppHeader {display: none;}
     
-    /* Style global et espacements XXXL */
+    /* 2. Optimisation globale du conteneur */
     .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 3rem;
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
         max-width: 98% !important;
     }
     
-    /* Style de la barre d'accès / login */
-    .login-card {
-        background-color: #1e293b;
-        padding: 45px;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    /* 3. Style de l'en-tête responsive */
+    .header-box {
+        background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
         color: white;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .header-title {
+        font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .header-subtitle {
+        color: #94a3b8;
+        font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+        margin-top: 4px;
+    }
+
+    /* 4. Adaptation spécifique selon la taille de l'écran (Media Queries) */
+    
+    /* Smartmphones (Écrans < 600px) */
+    @media (max-width: 600px) {
+        .block-container {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+        .header-box {
+            flex-direction: column;
+            text-align: center;
+            padding: 15px;
+        }
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+        }
+        /* Ajustement des boutons et entrées sur mobile */
+        .stButton>button {
+            width: 100% !important;
+        }
+    }
+    
+    /* Tablettes (600px à 1024px) */
+    @media (min-width: 601px) and (max-width: 1024px) {
+        .block-container {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+    }
+    
+    /* PC & Mac écran large (> 1024px) */
+    @media (min-width: 1025px) {
+        .block-container {
+            max-width: 95% !important;
+        }
     }
     </style>
     """,
@@ -80,18 +136,18 @@ if "default_cutoff" not in st.session_state:
 
 
 # ==========================================
-# PAGE D'ACCÈS PRIVÉ (LOGIN A L'ENTRÉE)
+# PAGE D'ACCÈS PRIVÉ (LOGIN RESPONSIVE)
 # ==========================================
 if not st.session_state["user_authenticated"]:
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     c_left, c_main, c_right = st.columns([1, 2, 1])
     
     with c_main:
         st.markdown(
             """
-            <div style="text-align: center; margin-bottom: 25px;">
-                <h1 style="font-size: 3rem;">🔒 Accès Privé — GeoAssistant Pro</h1>
-                <p style="font-size: 1.2rem; color: #64748b;">Plateforme d'analyse et d'ingénierie géologique & minière</p>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="font-size: clamp(1.8rem, 4vw, 2.8rem);">🔒 Accès Privé — GeoAssistant Pro</h1>
+                <p style="font-size: clamp(0.9rem, 1.5vw, 1.1rem); color: #64748b;">Plateforme d'analyse et d'ingénierie géologique & minière</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -114,26 +170,24 @@ if not st.session_state["user_authenticated"]:
 
 
 # ==========================================
-# EN-TÊTE & BARRE DE NAVIGATION EN HAUT (XXXL DESIGN)
+# EN-TÊTE & NAVIGATION RESPONSIVE EN HAUT
 # ==========================================
 st.markdown(
     f"""
-    <div style="background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%); padding: 20px 30px; border-radius: 12px; margin-bottom: 20px; color: white;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h1 style="margin:0; font-size: 2.2rem; font-weight: 700;">⛏️ {st.session_state['app_title']}</h1>
-                <p style="margin:5px 0 0 0; color: #94a3b8; font-size: 1.05rem;">Plateforme d'analyse pour l'estimation de ressources, géotechnique, hydrogéologie et design minier.</p>
-            </div>
-            <div style="text-align: right;">
-                <span style="background-color: #334155; padding: 8px 16px; border-radius: 20px; font-weight: 600;">👤 Session Active</span>
-            </div>
+    <div class="header-box">
+        <div>
+            <h1 class="header-title">⛏️ {st.session_state['app_title']}</h1>
+            <div class="header-subtitle">Plateforme multi-support d'analyse géologique, géotechnique et d'ingénierie minière.</div>
+        </div>
+        <div>
+            <span style="background-color: #334155; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; white-space: nowrap;">👤 Session Active</span>
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Navigation horizontale en haut
+# Navigation horizontale responsive
 modules_list = [
     "1. Exploration",
     "2. Géotechnique",
@@ -152,7 +206,7 @@ module = st.radio(
     label_visibility="collapsed"
 )
 
-st.markdown("<hr style='margin-top: 5px; margin-bottom: 25px; border-color: #334155;'>", unsafe_allow_html=True)
+st.markdown("<hr style='margin-top: 5px; margin-bottom: 20px; border-color: #334155;'>", unsafe_allow_html=True)
 
 
 # ==========================================
@@ -162,7 +216,7 @@ if module == "1. Exploration":
     st.header("🔍 Module 1 : Exploration & Estimation de Ressources")
     st.write("Importez des données de sondages ou générez des données de démonstration pour visualiser les profils et calculer des statistiques.")
 
-    col1, col2 = st.columns([1, 2])
+    col1, col2 = st.columns([1, 1 if st.session_state.get('mobile_view', False) else 2])
 
     with col1:
         st.subheader("Paramètres des Données")
@@ -198,7 +252,7 @@ if module == "1. Exploration":
         st.dataframe(df, use_container_width=True)
 
     with col2:
-        st.subheader("Visualisation du Profil Stratigraphique")
+        st.subheader("Profil Stratigraphique")
         holes = df["Hole_ID"].unique()
         hole_id = st.selectbox("Sélectionnez un Forage (Hole_ID) :", holes)
 
@@ -210,14 +264,14 @@ if module == "1. Exploration":
             x="Longueur (m)",
             color="Teneur (g/t)",
             orientation="h",
-            title=f"Profil Synthétique du Forage : {hole_id}",
+            title=f"Profil Synthétique : {hole_id}",
             color_continuous_scale="Viridis",
-            labels={"Longueur (m)": "Épaisseur de la couche (m)"},
+            labels={"Longueur (m)": "Épaisseur (m)"},
         )
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
-    st.subheader("📊 Estimation des Teneurs Moyennes (Pondérées par la Longueur)")
+    st.subheader("📊 Estimation des Teneurs Moyennes (Pondérées)")
     cut_off = st.slider(
         "Teneur de coupure (Cut-off grade g/t) :",
         min_value=0.0,
@@ -236,10 +290,10 @@ if module == "1. Exploration":
         weighted_avg_grade = 0.0
 
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Nombre total d'intervalles", len(df))
-    m2.metric("Intervalles exploitables (> Cut-off)", len(df_ore))
-    m3.metric("Longueur cumulée minerai", f"{total_length_ore:.1f} m")
-    m4.metric("Teneur Moyenne Pondérée", f"{weighted_avg_grade:.2f} g/t")
+    m1.metric("Total d'intervalles", len(df))
+    m2.metric("Intervalles > Cut-off", len(df_ore))
+    m3.metric("Longueur cumulée", f"{total_length_ore:.1f} m")
+    m4.metric("Teneur Moyenne", f"{weighted_avg_grade:.2f} g/t")
 
 
 # ==========================================
@@ -252,11 +306,11 @@ elif module == "2. Géotechnique":
     col1, col2 = st.columns(2)
 
     with col1:
-        ucs = st.number_input("1. Résistance à la compression simple - UCS (MPa) :", min_value=0.0, value=80.0)
+        ucs = st.number_input("1. Résistance compression - UCS (MPa) :", min_value=0.0, value=80.0)
         rqd = st.slider("2. Rock Quality Designation - RQD (%) :", 0, 100, 75)
-        spacing = st.number_input("3. Espacement des joints / discontinuités (m) :", min_value=0.001, value=0.3, step=0.05)
+        spacing = st.number_input("3. Espacement des joints (m) :", min_value=0.001, value=0.3, step=0.05)
         condition = st.selectbox(
-            "4. État des surfaces de discontinuité :",
+            "4. État des surfaces :",
             [
                 "Très rugueuses, non continues, parois saines (30 pts)",
                 "Légèrement rugueuses, altération faible (25 pts)",
@@ -276,7 +330,7 @@ elif module == "2. Géotechnique":
             ],
         )
         orientation_adj = st.selectbox(
-            "6. Ajustement orientation (Tunnel/Mine) :",
+            "6. Ajustement orientation :",
             [
                 "Très favorable (0 pt)",
                 "Favorable (-2 pts)",
@@ -347,7 +401,7 @@ elif module == "3. Hydrogéologie":
         transmissivity = st.number_input("Transmissivité T (m²/s) :", min_value=0.00001, value=0.001, format="%.5f")
         storativity = st.number_input("Coefficient d'emmagasinement S (-) :", min_value=0.00001, max_value=0.3, value=0.0005, format="%.5f")
         pumping_time_hrs = st.number_input("Durée du pompage t (heures) :", min_value=0.1, value=24.0, step=1.0)
-        max_dist = st.slider("Rayon d'impact maximal visualisé (m) :", 10, 1000, 300)
+        max_dist = st.slider("Rayon d'impact maximal (m) :", 10, 1000, 300)
 
     q_m3s = q / 3600.0
     t_seconds = pumping_time_hrs * 3600.0
@@ -379,7 +433,7 @@ elif module == "4. Environnement":
     with col1:
         st.subheader("Comptabilité Acide-Base (ABA)")
         sulfur_pct = st.number_input("Teneur en Soufre Total S (%) :", min_value=0.0, value=1.5, step=0.1)
-        np_val = st.number_input("Potentiel de Neutralisation NP (kg CaCO3/t) :", min_value=0.0, value=25.0, step=1.0)
+        np_val = st.number_input("Potentiel Neutralisation NP (kg CaCO3/t) :", min_value=0.0, value=25.0, step=1.0)
 
         ap_val = sulfur_pct * 31.25
         nnp_val = np_val - ap_val
@@ -387,17 +441,17 @@ elif module == "4. Environnement":
 
         st.markdown("---")
         st.metric("Potentiel Acide (AP)", f"{ap_val:.2f} kg CaCO3/t")
-        st.metric("Potentiel Net de Neutralisation (NNP)", f"{nnp_val:.2f} kg CaCO3/t")
+        st.metric("Potentiel Net Neutralisation (NNP)", f"{nnp_val:.2f} kg CaCO3/t")
         st.metric("Ratio NP/AP (NPR)", f"{npr_ratio:.2f}")
 
     with col2:
         st.subheader("Évaluation du Risque")
         if npr_ratio < 1.0 or nnp_val < -20:
             st.error("🚨 **Roche Potentiellement Génératrice d'Acide (PAG)**")
-            st.write("Risque élevé de drainage acide minier. Un plan de confinement et de traitement des effluents est nécessaire.")
+            st.write("Risque élevé de drainage acide minier. Un plan de confinement est nécessaire.")
         elif 1.0 <= npr_ratio <= 2.0 or -20 <= nnp_val <= 20:
             st.warning("⚠️ **Zone Incertaine / Risque Modéré**")
-            st.write("Risque modéré. Des essais cinétiques complémentaires en colonne sont recommandés.")
+            st.write("Risque modéré. Des essais cinétiques complémentaires sont recommandés.")
         else:
             st.success("✅ **Roche Non Génératrice d'Acide (Non-PAG)**")
             st.write("La roche dispose d'une capacité de neutralisation suffisante.")
@@ -421,9 +475,9 @@ elif module == "5. Design Minier":
         c1, c2 = st.columns(2)
         with c1:
             tonnes_ore = st.number_input("Tonnage de minerai à extraire (kt) :", min_value=1.0, value=5000.0, step=500.0)
-            vol_waste = st.number_input("Volume de stérile / découverture (k m³) :", min_value=0.0, value=12500.0, step=500.0)
-            density_ore = st.number_input("Masse volumique du minerai (t/m³) :", min_value=1.0, value=2.7, step=0.1)
-            density_waste = st.number_input("Masse volumique du stérile (t/m³) :", min_value=1.0, value=2.4, step=0.1)
+            vol_waste = st.number_input("Volume de stérile (k m³) :", min_value=0.0, value=12500.0, step=500.0)
+            density_ore = st.number_input("Masse volumique minerai (t/m³) :", min_value=1.0, value=2.7, step=0.1)
+            density_waste = st.number_input("Masse volumique stérile (t/m³) :", min_value=1.0, value=2.4, step=0.1)
 
         tonnes_waste = vol_waste * density_waste
         vol_ore = tonnes_ore / density_ore
@@ -431,8 +485,8 @@ elif module == "5. Design Minier":
         stripping_ratio_ton = tonnes_waste / tonnes_ore if tonnes_ore > 0 else 0
 
         with c2:
-            st.metric("Ratio de Découverture Volumique", f"{stripping_ratio_vol:.2f} m³ stérile / m³ minerai")
-            st.metric("Ratio de Découverture Massique", f"{stripping_ratio_ton:.2f} t stérile / t minerai")
+            st.metric("Ratio Découverture Volumique", f"{stripping_ratio_vol:.2f} m³ stérile / m³ minerai")
+            st.metric("Ratio Découverture Massique", f"{stripping_ratio_ton:.2f} t stérile / t minerai")
 
             fig_vol = px.pie(
                 values=[tonnes_ore, tonnes_waste],
@@ -446,15 +500,15 @@ elif module == "5. Design Minier":
         st.subheader("Calcul du Nombre d'Équipements")
         col_p1, col_p2 = st.columns(2)
         with col_p1:
-            target_prod_annual = st.number_input("Objectif d'excavation totale (Mt/an) :", min_value=0.1, value=15.0)
+            target_prod_annual = st.number_input("Objectif excavation (Mt/an) :", min_value=0.1, value=15.0)
             operating_days = st.number_input("Jours d'opération / an :", 100, 365, 350)
             hours_per_day = st.number_input("Heures de travail / jour :", 1, 24, 20)
             bucket_cap = st.number_input("Capacité du godet (m³) :", 1.0, 50.0, 12.0)
-            cycle_time_excav = st.number_input("Temps de cycle pelle (secondes) :", 10, 120, 30)
+            cycle_time_excav = st.number_input("Temps de cycle pelle (s) :", 10, 120, 30)
 
         with col_p2:
-            truck_payload = st.number_input("Capacité utile du camion (tonnes) :", 10.0, 400.0, 100.0)
-            truck_cycle_time = st.number_input("Temps total aller-retour camion (min) :", 5.0, 120.0, 25.0)
+            truck_payload = st.number_input("Capacité camion (tonnes) :", 10.0, 400.0, 100.0)
+            truck_cycle_time = st.number_input("Temps aller-retour camion (min) :", 5.0, 120.0, 25.0)
 
             total_hours_year = operating_days * hours_per_day
             target_tph = (target_prod_annual * 1e6) / total_hours_year if total_hours_year > 0 else 0
@@ -478,9 +532,9 @@ elif module == "5. Design Minier":
         c_ec1, c_ec2 = st.columns(2)
         with c_ec1:
             price_metal = st.number_input("Prix du Métal ($/g) :", min_value=0.1, value=65.0)
-            recovery_rate = st.slider("Rendement Récupération Métallurgique (%) :", 50, 100, 88) / 100.0
-            cost_mining = st.number_input("Coût d'extraction minier ($/t roche) :", 0.5, 50.0, 2.8)
-            cost_processing = st.number_input("Coût de traitement minéralurgique ($/t minerai) :", 1.0, 100.0, 12.0)
+            recovery_rate = st.slider("Récupération Métallurgique (%) :", 50, 100, 88) / 100.0
+            cost_mining = st.number_input("Coût extraction ($/t roche) :", 0.5, 50.0, 2.8)
+            cost_processing = st.number_input("Coût traitement ($/t minerai) :", 1.0, 100.0, 12.0)
             cost_ga = st.number_input("Frais Généraux G&A ($/t minerai) :", 0.5, 30.0, 3.5)
 
         with c_ec2:
@@ -497,7 +551,7 @@ elif module == "5. Design Minier":
             st.metric("Revenus Bruts Estimés", f"{revenue/1e6:.2f} M$")
             st.metric("Coûts Opérationnels Totaux (OPEX)", f"{opex_total/1e6:.2f} M$")
             if cash_flow >= 0:
-                st.success(f"💚 **Marge Opérationnelle Brute (EBITDA) : +{cash_flow/1e6:.2f} M$**")
+                st.success(f"💚 **Marge Opérationnelle (EBITDA) : +{cash_flow/1e6:.2f} M$**")
             else:
                 st.error(f"🔴 **Déficit d'Exploitation : {cash_flow/1e6:.2f} M$**")
 
@@ -548,14 +602,14 @@ elif module == "6. SIG & Carto":
         )
         draw.add_to(m)
 
-        output = st_folium(m, width=1200, height=550)
+        output = st_folium(m, use_container_width=True, height=500)
 
         st.markdown("---")
         st.subheader("📐 Zone Délimitée & Synchronisation Vectorielle")
 
         if output and output.get("all_drawings"):
             drawings = output["all_drawings"]
-            st.success(f"✅ **{len(drawings)} entité(s) géométrique(s) dessinée(s) et synchronisée(s).**")
+            st.success(f"✅ **{len(drawings)} entité(s) géométrique(s) dessinée(s).**")
 
             geojson_export = {
                 "type": "FeatureCollection",
@@ -565,33 +619,33 @@ elif module == "6. SIG & Carto":
             col_geo1, col_geo2 = st.columns([2, 1])
 
             with col_geo1:
-                st.markdown("##### 📋 Détails des Coordonnées (GeoJSON) :")
+                st.markdown("##### 📋 Coordonnées (GeoJSON) :")
                 st.json(geojson_export)
 
             with col_geo2:
-                st.markdown("##### 📥 Téléchargement SIG :")
+                st.markdown("##### 📥 Exporter :")
                 st.download_button(
-                    label="💾 Exporter la zone (GeoJSON)",
+                    label="💾 Télécharger (GeoJSON)",
                     data=json.dumps(geojson_export, indent=2),
                     file_name="delimitation_zone_etude.geojson",
                     mime="application/json",
                     use_container_width=True
                 )
         else:
-            st.info("💡 Utilisez la barre d'outils à gauche de la carte pour tracer votre zone d'étude.")
+            st.info("💡 Utilisez les icônes de carte pour délimiter votre zone.")
 
     else:
-        st.info("Carte standard Streamlit (Installez `folium` et `streamlit-folium` pour les fonctionnalités de dessin avancées).")
+        st.info("Carte standard Streamlit (Installez `folium` et `streamlit-folium` pour dessiner des zones).")
         map_data = pd.DataFrame({"lat": [14.6937, 14.7100, 14.6800], "lon": [-17.4441, -17.4300, -17.4600]})
         st.map(map_data)
 
 
 # ==========================================
-# MODULE 7: GENERATEUR DE RAPPORT PDF (SANS INFOS PRIVÉES)
+# MODULE 7: GENERATEUR DE RAPPORT PDF (NEUTRE SANS INFOS PRIVÉES)
 # ==========================================
 elif module == "7. Rapport PDF":
     st.header("📄 Module 7 : Génération de Rapport PDF Technique")
-    st.write("Compilez les résultats du projet pour générer un rapport PDF professionnel **excluant toute donnée confidentielle d'accès ou d'administration**.")
+    st.write("Compilez les résultats du projet pour générer un rapport PDF professionnel **ne contenant aucune donnée confidentielle ou privée**.")
 
     col_meta1, col_meta2 = st.columns(2)
     with col_meta1:
@@ -607,20 +661,20 @@ elif module == "7. Rapport PDF":
     )
 
     st.markdown("---")
-    if st.button("🚀 Générer le Rapport PDF Technique"):
+    if st.button("🚀 Générer le Rapport PDF Technique", use_container_width=True):
         if HAS_REPORTLAB:
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=letter)
             styles = getSampleStyleSheet()
             story = []
 
-            # Entête et titre (Sans identifiants privées)
+            # Entête et titre neutre
             story.append(Paragraph(f"<b>{title_report}</b>", styles["Title"]))
             story.append(Spacer(1, 12))
             story.append(Paragraph(f"<b>Projet :</b> {project_name} | <b>Auteur :</b> {author_report}", styles["Normal"]))
             story.append(Spacer(1, 12))
 
-            # Table technique pure (Aucun identifiant/code d'accès n'est affiché)
+            # Données techniques pures
             data_table = [
                 ["Paramètre Technique", "Valeur / Statut"],
                 ["Plateforme d'Analyse", "GeoAssistant Pro"],
@@ -657,6 +711,7 @@ elif module == "7. Rapport PDF":
                 data=buffer,
                 file_name="rapport_technique_projet.pdf",
                 mime="application/pdf",
+                use_container_width=True
             )
         else:
             st.error("Le package `reportlab` n'est pas installé (`pip install reportlab`).")
@@ -665,7 +720,7 @@ elif module == "7. Rapport PDF":
 # ==========================================
 # MODULE 8: ADMINISTRATION
 # ==========================================
-elif module == "⚙️ Admin":
+elif module == "⚙️️ Admin":
     st.header("⚙️ Espace d'Administration Système")
 
     tab_adm1, tab_adm2 = st.tabs([
@@ -684,7 +739,7 @@ elif module == "⚙️ Admin":
             step=0.1,
         )
 
-        if st.button("💾 Enregistrer les Modifications"):
+        if st.button("💾 Enregistrer les Modifications", use_container_width=True):
             st.session_state["app_title"] = new_title
             st.session_state["default_cutoff"] = new_cutoff
             st.success("Paramètres enregistrés !")
@@ -697,7 +752,7 @@ elif module == "⚙️ Admin":
 
     with tab_adm2:
         st.subheader("Gestion de Session")
-        if st.button("🚪 Déconnexion"):
+        if st.button("🚪 Déconnexion", use_container_width=True):
             st.session_state["user_authenticated"] = False
             st.session_state["admin_authenticated"] = False
             st.rerun()
