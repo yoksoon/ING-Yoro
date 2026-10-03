@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from scipy.special import exp1  # Fonction d'intégrale d'exponentielle W(u) pour Theis
+from scipy.special import exp1
 
 # Imports optionnels avec gestion d'erreurs
 try:
@@ -29,13 +29,43 @@ except ImportError:
 
 
 # ==========================================
-# CONFIGURATION DE LA PAGE & DE L'ÉTAT (SESSION)
+# CONFIGURATION DE LA PAGE & MASQUAGE DU HEADER NATIF
 # ==========================================
 st.set_page_config(
     page_title="GeoAssistant Pro",
     page_icon="⛏️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
+)
+
+# Injection de CSS pour cacher le menu Streamlit natif (Share, GitHub, 3 dots, etc.) et styliser l'UI en format XXXL
+st.markdown(
+    """
+    <style>
+    /* Cacher le header natif Streamlit, le bouton Share, l'icône GitHub et le footer */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stAppHeader {display: none;}
+    
+    /* Style global et espacements XXXL */
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 3rem;
+        max-width: 98% !important;
+    }
+    
+    /* Style de la barre d'accès / login */
+    .login-card {
+        background-color: #1e293b;
+        padding: 45px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 # Initialisations d'état de session
@@ -50,24 +80,33 @@ if "default_cutoff" not in st.session_state:
 
 
 # ==========================================
-# PAGE D'ACCÈS PRIVÉ (LOGIN À L'ENTRÉE)
+# PAGE D'ACCÈS PRIVÉ (LOGIN A L'ENTRÉE)
 # ==========================================
 if not st.session_state["user_authenticated"]:
-    st.title("🔒 Accès Privé — GeoAssistant Pro")
-    st.markdown("Veuillez vous identifier pour accéder à la plateforme d'analyse géologique et minière.")
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    c_left, c_main, c_right = st.columns([1, 2, 1])
     
-    col_login, _ = st.columns([1, 1])
-    with col_login:
+    with c_main:
+        st.markdown(
+            """
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h1 style="font-size: 3rem;">🔒 Accès Privé — GeoAssistant Pro</h1>
+                <p style="font-size: 1.2rem; color: #64748b;">Plateforme d'analyse et d'ingénierie géologique & minière</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
         with st.form("login_form"):
-            username_input = st.text_input("Identifiant :")
-            password_input = st.text_input("Mot de passe :", type="password")
-            submit_login = st.form_submit_button("Se connecter à la plateforme")
+            username_input = st.text_input("Identifiant :", placeholder="Entrez votre identifiant")
+            password_input = st.text_input("Mot de passe :", type="password", placeholder="••••••••")
+            submit_login = st.form_submit_button("🔑 Se connecter à la plateforme", use_container_width=True)
             
             if submit_login:
                 if username_input == "YT" and password_input == "YT2026":
                     st.session_state["user_authenticated"] = True
                     st.session_state["admin_authenticated"] = True
-                    st.success("✅ Accès autorisé ! Bienvenue YT.")
+                    st.success("✅ Accès autorisé !")
                     st.rerun()
                 else:
                     st.error("❌ Identifiant ou mot de passe incorrect.")
@@ -75,49 +114,53 @@ if not st.session_state["user_authenticated"]:
 
 
 # ==========================================
-# EN-TÊTE ET BARRE LATÉRALE - NAVIGATION
+# EN-TÊTE & BARRE DE NAVIGATION EN HAUT (XXXL DESIGN)
 # ==========================================
-st.title(f"⛏️ {st.session_state['app_title']} — Plateforme Géologique & Minière")
 st.markdown(
-    "Plateforme d'analyse pour l'estimation de ressources, la géotechnique, l'hydrogéologie, l'environnement et le design minier."
+    f"""
+    <div style="background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%); padding: 20px 30px; border-radius: 12px; margin-bottom: 20px; color: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="margin:0; font-size: 2.2rem; font-weight: 700;">⛏️ {st.session_state['app_title']}</h1>
+                <p style="margin:5px 0 0 0; color: #94a3b8; font-size: 1.05rem;">Plateforme d'analyse pour l'estimation de ressources, géotechnique, hydrogéologie et design minier.</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="background-color: #334155; padding: 8px 16px; border-radius: 20px; font-weight: 600;">👤 Session Active</span>
+            </div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
-st.sidebar.header("Navigation")
-module = st.sidebar.radio(
-    "Sélectionnez un module :",
-    [
-        "1. Exploration & Ressources",
-        "2. Géotechnique (RMR Bieniawski)",
-        "3. Hydrogéologie (Test de Nappe)",
-        "4. Environnement (Drainage Acide)",
-        "5. Exploitation & Design Minier",
-        "6. SIG & Cartographie",
-        "7. Générateur de Rapport PDF",
-        "⚙️ Administration",
-    ],
+# Navigation horizontale en haut
+modules_list = [
+    "1. Exploration",
+    "2. Géotechnique",
+    "3. Hydrogéologie",
+    "4. Environnement",
+    "5. Design Minier",
+    "6. SIG & Carto",
+    "7. Rapport PDF",
+    "⚙️ Admin"
+]
+
+module = st.radio(
+    "Navigation Principale",
+    modules_list,
+    horizontal=True,
+    label_visibility="collapsed"
 )
 
-st.sidebar.markdown("---")
-st.sidebar.write("👤 **Utilisateur :** YT")
-if st.sidebar.button("🔒 Déconnexion"):
-    st.session_state["user_authenticated"] = False
-    st.session_state["admin_authenticated"] = False
-    st.rerun()
-
-st.sidebar.info(
-    "**GeoAssistant Pro v3.0**\n\n"
-    "Développé pour les ingénieurs géologues et miniers."
-)
+st.markdown("<hr style='margin-top: 5px; margin-bottom: 25px; border-color: #334155;'>", unsafe_allow_html=True)
 
 
 # ==========================================
 # MODULE 1: EXPLORATION & RESSOURCES
 # ==========================================
-if module == "1. Exploration & Ressources":
+if module == "1. Exploration":
     st.header("🔍 Module 1 : Exploration & Estimation de Ressources")
-    st.write(
-        "Importez des données de sondages ou générez des données de démonstration pour visualiser les profils et calculer des statistiques."
-    )
+    st.write("Importez des données de sondages ou générez des données de démonstration pour visualiser les profils et calculer des statistiques.")
 
     col1, col2 = st.columns([1, 2])
 
@@ -134,22 +177,15 @@ if module == "1. Exploration & Ressources":
                 "De (m)": [0, 10, 20, 0, 15, 0, 12, 25],
                 "A (m)": [10, 20, 30, 15, 35, 12, 25, 40],
                 "Lithologie": [
-                    "Surcharge",
-                    "Schiste",
-                    "Minéralisation",
-                    "Surcharge",
-                    "Minéralisation",
-                    "Surcharge",
-                    "Granite",
-                    "Minéralisation",
+                    "Surcharge", "Schiste", "Minéralisation",
+                    "Surcharge", "Minéralisation",
+                    "Surcharge", "Granite", "Minéralisation",
                 ],
                 "Teneur (g/t)": [0.1, 0.4, 3.8, 0.2, 4.2, 0.1, 0.5, 2.9],
             }
             df = pd.DataFrame(data)
         else:
-            uploaded_file = st.file_uploader(
-                "Importer le fichier CSV de sondage", type=["csv"]
-            )
+            uploaded_file = st.file_uploader("Importer le fichier CSV de sondage", type=["csv"])
             if uploaded_file is not None:
                 df = pd.read_csv(uploaded_file)
             else:
@@ -207,13 +243,11 @@ if module == "1. Exploration & Ressources":
 
 
 # ==========================================
-# MODULE 2: GÉOTECHNIQUE (RMR BIENIAWSKI)
+# MODULE 2: GÉOTECHNIQUE
 # ==========================================
-elif module == "2. Géotechnique (RMR Bieniawski)":
+elif module == "2. Géotechnique":
     st.header("🪨 Module 2 : Classification Géotechnique (RMR 89)")
-    st.write(
-        "Calculez l'indice Rock Mass Rating (RMR) de Bieniawski (1989) pour évaluer la qualité du massif rocheux."
-    )
+    st.write("Calculez l'indice Rock Mass Rating (RMR) de Bieniawski (1989) pour évaluer la qualité du massif rocheux.")
 
     col1, col2 = st.columns(2)
 
@@ -302,11 +336,9 @@ elif module == "2. Géotechnique (RMR Bieniawski)":
 # ==========================================
 # MODULE 3: HYDROGÉOLOGIE
 # ==========================================
-elif module == "3. Hydrogéologie (Test de Nappe)":
+elif module == "3. Hydrogéologie":
     st.header("💧 Module 3 : Hydrogéologie — Équation Transitoire de Theis")
-    st.write(
-        "Calculez le rabattement analytique en régime transitoire à l'aide de la fonction de puits de Theis $W(u)$."
-    )
+    st.write("Calculez le rabattement analytique en régime transitoire à l'aide de la fonction de puits de Theis $W(u)$.")
 
     col1, col2 = st.columns([1, 2])
 
@@ -336,13 +368,11 @@ elif module == "3. Hydrogéologie (Test de Nappe)":
 
 
 # ==========================================
-# MODULE 4: ENVIRONNEMENT (DRAINAGE ACIDE)
+# MODULE 4: ENVIRONNEMENT
 # ==========================================
-elif module == "4. Environnement (Drainage Acide)":
+elif module == "4. Environnement":
     st.header("🌱 Module 4 : Drainage Acide Minier (DAM / APAG)")
-    st.write(
-        "Évaluez le potentiel de génération d'acide d'un échantillon rocheux à partir de la comptabilité acide-base (ABA)."
-    )
+    st.write("Évaluez le potentiel de génération d'acide d'un échantillon rocheux à partir de la comptabilité acide-base (ABA).")
 
     col1, col2 = st.columns(2)
 
@@ -376,7 +406,7 @@ elif module == "4. Environnement (Drainage Acide)":
 # ==========================================
 # MODULE 5: EXPLOITATION & PLANIFICATION MINIÈRE
 # ==========================================
-elif module == "5. Exploitation & Design Minier":
+elif module == "5. Design Minier":
     st.header("🚜 Module 5 : Exploitation & Planification Minière")
     st.write("Dimensionnement de fosse, ratio de découverture (*Stripping Ratio*), flottes d'équipements et économie du projet.")
 
@@ -475,12 +505,9 @@ elif module == "5. Exploitation & Design Minier":
 # ==========================================
 # MODULE 6: SIG & CARTOGRAPHIE
 # ==========================================
-elif module == "6. SIG & Cartographie":
-    st.header("🗺 Module 6 : Système d'Information Géographique (SIG) & Délimitation")
-    st.write(
-        "Utilisez la barre d'outils interactive à gauche de la carte pour **délimiter votre zone d'étude** "
-        "(Polygone, Rectangle, Repère, Ligne). Les coordonnées et superficies sont synchronisées automatiquement."
-    )
+elif module == "6. SIG & Carto":
+    st.header("🗺 Module 6 : Système d'Information Géographique (SIG)")
+    st.write("Utilisez la barre d'outils interactive à gauche de la carte pour délimiter votre zone d'étude.")
 
     if HAS_FOLIUM:
         tile_provider = st.selectbox(
@@ -521,7 +548,7 @@ elif module == "6. SIG & Cartographie":
         )
         draw.add_to(m)
 
-        output = st_folium(m, width=1000, height=550)
+        output = st_folium(m, width=1200, height=550)
 
         st.markdown("---")
         st.subheader("📐 Zone Délimitée & Synchronisation Vectorielle")
@@ -550,21 +577,8 @@ elif module == "6. SIG & Cartographie":
                     mime="application/json",
                     use_container_width=True
                 )
-                
-                for idx, feat in enumerate(drawings):
-                    geom_type = feat.get("geometry", {}).get("type")
-                    if geom_type in ["Polygon", "Rectangle"]:
-                        coords = feat["geometry"]["coordinates"][0]
-                        lats = [c[1] for c in coords]
-                        
-                        mean_lat = np.mean(lats)
-                        x = [c[0] * 111.32 * math.cos(math.radians(mean_lat)) for c in coords]
-                        y = [c[1] * 110.574 for c in coords]
-                        area_km2 = 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
-                        
-                        st.info(f"📏 **Zone {idx+1} ({geom_type}) :**\n\n• **Superficie :** `{area_km2:.3f} km²` ({area_km2*100:.1f} ha)")
         else:
-            st.info("💡 **Instruction :** Utilisez la barre d'outils à gauche de la carte (icônes carré, polygone, marqueur) pour tracer votre zone d'étude.")
+            st.info("💡 Utilisez la barre d'outils à gauche de la carte pour tracer votre zone d'étude.")
 
     else:
         st.info("Carte standard Streamlit (Installez `folium` et `streamlit-folium` pour les fonctionnalités de dessin avancées).")
@@ -573,16 +587,16 @@ elif module == "6. SIG & Cartographie":
 
 
 # ==========================================
-# MODULE 7: GÉNÉRATEUR DE RAPPORT PDF
+# MODULE 7: GENERATEUR DE RAPPORT PDF (SANS INFOS PRIVÉES)
 # ==========================================
-elif module == "7. Générateur de Rapport PDF":
-    st.header("📄 Module 7 : Génération de Rapport PDF")
-    st.write("Compilez les résultats du projet pour générer un rapport PDF professionnel.")
+elif module == "7. Rapport PDF":
+    st.header("📄 Module 7 : Génération de Rapport PDF Technique")
+    st.write("Compilez les résultats du projet pour générer un rapport PDF professionnel **excluant toute donnée confidentielle d'accès ou d'administration**.")
 
     col_meta1, col_meta2 = st.columns(2)
     with col_meta1:
         title_report = st.text_input("Titre du Rapport :", "Rapport d'Évaluation Technique - Projet Minier")
-        author_report = st.text_input("Auteur / Ingénieur :", "Yoro THIAM")
+        author_report = st.text_input("Ingénieur / Responsable :", "Département Géologique & Ingénierie")
     with col_meta2:
         project_name = st.text_input("Nom du Projet / Site :", "Zone A - Prospect Diamniadio")
 
@@ -593,37 +607,43 @@ elif module == "7. Générateur de Rapport PDF":
     )
 
     st.markdown("---")
-    if st.button("🚀 Générer le Rapport PDF Final"):
+    if st.button("🚀 Générer le Rapport PDF Technique"):
         if HAS_REPORTLAB:
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=letter)
             styles = getSampleStyleSheet()
             story = []
 
+            # Entête et titre (Sans identifiants privées)
             story.append(Paragraph(f"<b>{title_report}</b>", styles["Title"]))
             story.append(Spacer(1, 12))
             story.append(Paragraph(f"<b>Projet :</b> {project_name} | <b>Auteur :</b> {author_report}", styles["Normal"]))
             story.append(Spacer(1, 12))
 
+            # Table technique pure (Aucun identifiant/code d'accès n'est affiché)
             data_table = [
-                ["Paramètre", "Valeur / Statut"],
-                ["Plateforme", "GeoAssistant Pro v3.0"],
+                ["Paramètre Technique", "Valeur / Statut"],
+                ["Plateforme d'Analyse", "GeoAssistant Pro"],
                 ["Date de Génération", datetime.datetime.now().strftime("%Y-%m-%d %H:%M")],
-                ["Statut de Validation", "Conforme aux normes NI 43-101 / JORC"],
+                ["Conformité Technique", "Conforme aux normes standard de l'industrie"],
+                ["Cut-off appliqué", f"{st.session_state.get('default_cutoff', 1.0)} g/t"],
             ]
             t = Table(data_table, colWidths=[200, 200])
             t.setStyle(
                 TableStyle([
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.navy),
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f172a")),
                     ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.HexColor("#cbd5e1")),
+                    ("PADDING", (0, 0), (-1, -1), 8),
                 ])
             )
             story.append(t)
             story.append(Spacer(1, 18))
 
-            story.append(Paragraph("<b>Évaluation Technique Synthétique :</b>", styles["Heading2"]))
+            story.append(Paragraph("<b>Évaluation & Conclusions Techniques :</b>", styles["Heading2"]))
+            story.append(Spacer(1, 8))
+            
             for paragraph in comments.split("\n"):
                 if paragraph.strip():
                     story.append(Paragraph(paragraph, styles["Normal"]))
@@ -635,7 +655,7 @@ elif module == "7. Générateur de Rapport PDF":
             st.download_button(
                 label="📥 Télécharger le Rapport PDF",
                 data=buffer,
-                file_name="rapport_geologique_pro.pdf",
+                file_name="rapport_technique_projet.pdf",
                 mime="application/pdf",
             )
         else:
@@ -645,13 +665,12 @@ elif module == "7. Générateur de Rapport PDF":
 # ==========================================
 # MODULE 8: ADMINISTRATION
 # ==========================================
-elif module == "⚙️ Administration":
+elif module == "⚙️ Admin":
     st.header("⚙️ Espace d'Administration Système")
-    st.success("🔒 Connecté en tant qu'Administrateur Général : **YT**")
 
     tab_adm1, tab_adm2 = st.tabs([
         "⚙️ Config & Paramètres Application",
-        "📜 Session & Déconnexion",
+        "📜 Déconnexion",
     ])
 
     with tab_adm1:
@@ -665,7 +684,7 @@ elif module == "⚙️ Administration":
             step=0.1,
         )
 
-        if st.button("💾 Enregistrer les Modifications App"):
+        if st.button("💾 Enregistrer les Modifications"):
             st.session_state["app_title"] = new_title
             st.session_state["default_cutoff"] = new_cutoff
             st.success("Paramètres enregistrés !")
@@ -677,10 +696,8 @@ elif module == "⚙️ Administration":
         c_a2.metric("ReportLab (PDF)", "OK" if HAS_REPORTLAB else "Manquant")
 
     with tab_adm2:
-        st.subheader("Gestion de Session Administrateur")
-        st.write("Compte actif : **YT**")
-        if st.button("🚪 Déconnexion Session Administrateur"):
+        st.subheader("Gestion de Session")
+        if st.button("🚪 Déconnexion"):
             st.session_state["user_authenticated"] = False
             st.session_state["admin_authenticated"] = False
-            st.info("Vous avez été déconnecté.")
             st.rerun()
